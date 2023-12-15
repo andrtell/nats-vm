@@ -1,0 +1,37 @@
+- name: Nats
+
+  hosts: all
+  remote_user: agent
+
+  tasks:
+    
+    - name: Create Nats network
+      containers.podman.podman_network:
+        name: nats
+        state: present
+    
+    - name: Create /nats
+      ansible.builtin.file:
+        path: '/home/agent/nats'
+        state: directory
+        mode: 0700
+   
+    - name: Create SystemD directory
+      ansible.builtin.file:
+        path: '/home/agent/.config/systemd/user'
+        state: directory
+        mode: 0700
+
+    - name: Copy Nats SystemD service file
+      ansible.builtin.template:
+        src: nats.service.j2
+        dest: '/home/agent/.config/systemd/user/nats.service'
+        mode: 0400
+    
+    - name: Start & Enable the Nats service
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+        enabled: true
+        name: nats
+        scope: user
+        state: restarted

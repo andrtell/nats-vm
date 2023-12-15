@@ -1,0 +1,35 @@
+[Unit]
+Description=Nats
+Documentation=man:podman-generate-systemd(1)
+Wants=network-online.target
+After=network-online.target podman.socket
+RequiresMountsFor=%t/containers
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=on-failure
+TimeoutStopSec=70
+ExecStart=/usr/bin/podman run \
+	--cidfile=%t/%n.ctr-id \
+	--cgroups=no-conmon \
+	--sdnotify=conmon \
+	--name=nats \
+	--network=nats \
+	--replace \
+	-d \
+	-p 4222:4222 \
+	-p 6222:6222 \
+	-p 8222:8222 \
+	docker.io/nats:latest
+ExecStop=/usr/bin/podman stop \
+	--ignore -t 10 \
+	--cidfile=%t/%n.ctr-id
+ExecStopPost=/usr/bin/podman rm \
+	-f \
+	--ignore -t 10 \
+	--cidfile=%t/%n.ctr-id
+Type=notify
+NotifyAccess=all
+
+[Install]
+WantedBy=default.target

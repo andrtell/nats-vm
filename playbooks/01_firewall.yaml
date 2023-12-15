@@ -1,0 +1,26 @@
+- name: Firewall
+
+  hosts: all
+  remote_user: agent
+  become: true
+
+  tasks:
+    - name: Allow access to port 4222
+      community.general.ufw: 
+        rule: allow 
+        port: 4222
+
+    - name: Allow access to port 6222
+      community.general.ufw: 
+        rule: allow 
+        port: 6222
+
+    - name: Allow access to port 8222
+      community.general.ufw: 
+        rule: allow 
+        port: 8222
+
+    - name: Reload UFW
+      community.general.ufw:
+        default: deny
+        state: reloaded
