@@ -17,10 +17,14 @@ ExecStart=/usr/bin/podman run \
 	--network=nats \
 	--replace \
 	-d \
+	-v /home/agent/nats/nats.config:/nats.config:ro \
+	-v /home/agent/certs/fullchain.pem:/fullchain.pem:ro \
+	-v /home/agent/certs/privkey.pem:/privkey.pem:ro \
+	--secret nats_token,type=env,target=NATS_TOKEN \
 	-p 4222:4222 \
 	-p 6222:6222 \
 	-p 8222:8222 \
-	docker.io/nats:latest
+	docker.io/nats:latest -c /nats.config
 ExecStop=/usr/bin/podman stop \
 	--ignore -t 10 \
 	--cidfile=%t/%n.ctr-id

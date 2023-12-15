@@ -5,7 +5,7 @@
 
   tasks:
     
-    - name: Create Nats network
+    - name: Create NATS network
       containers.podman.podman_network:
         name: nats
         state: present
@@ -15,20 +15,51 @@
         path: '/home/agent/nats'
         state: directory
         mode: 0700
+
+    - name: Copy NATS config
+      ansible.builtin.template:
+        src: nats.config.j2
+        dest: '/home/agent/nats/nats.config'
+        mode: 0400
+
+    - name: Create /certs
+      ansible.builtin.file:
+        path: '/home/agent/certs'
+        state: directory
+        mode: 0700
+
+    - name: Copy fullchain
+      ansible.builtin.copy:
+        src: '{{ certs_fullchain }}'
+        dest: '/home/agent/certs/fullchain.pem'
+        mode: 0400
+
+    - name: Copy privkey
+      ansible.builtin.copy:
+        src: '{{ certs_privkey }}'
+        dest: '/home/agent/certs/privkey.pem'
+        mode: 0400
    
+    - name: Create the nats_token secret
+      containers.podman.podman_secret:
+        name: nats_token
+        state: present
+        data: '{{ nats_token }}'
+        force: true
+
     - name: Create SystemD directory
       ansible.builtin.file:
         path: '/home/agent/.config/systemd/user'
         state: directory
         mode: 0700
 
-    - name: Copy Nats SystemD service file
+    - name: Copy NATS SystemD service file
       ansible.builtin.template:
         src: nats.service.j2
         dest: '/home/agent/.config/systemd/user/nats.service'
         mode: 0400
     
-    - name: Start & Enable the Nats service
+    - name: Start & Enable the NATS service
       ansible.builtin.systemd_service:
         daemon_reload: true
         enabled: true
