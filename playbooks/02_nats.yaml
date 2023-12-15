@@ -16,10 +16,16 @@
         state: directory
         mode: 0700
 
-    - name: Copy NATS config
+    - name: Copy NATS public config
       ansible.builtin.template:
-        src: nats.config.j2
-        dest: '/home/agent/nats/nats.config'
+        src: nats_pub.conf.j2
+        dest: '/home/agent/nats/nats_pub.conf'
+        mode: 0400
+
+    - name: Copy NATS private config
+      ansible.builtin.template:
+        src: nats_pri.conf.j2
+        dest: '/home/agent/nats/nats_pri.conf'
         mode: 0400
 
     - name: Create /certs
@@ -53,16 +59,30 @@
         state: directory
         mode: 0700
 
-    - name: Copy NATS SystemD service file
+    - name: Copy NATS PUB SystemD service file
       ansible.builtin.template:
-        src: nats.service.j2
-        dest: '/home/agent/.config/systemd/user/nats.service'
+        src: nats_pub.service.j2
+        dest: '/home/agent/.config/systemd/user/nats_pub.service'
+        mode: 0400
+
+    - name: Copy NATS PRI SystemD service file
+      ansible.builtin.template:
+        src: nats_pri.service.j2
+        dest: '/home/agent/.config/systemd/user/nats_pri.service'
         mode: 0400
     
-    - name: Start & Enable the NATS service
+    - name: Start & Enable the NATS PUB service
       ansible.builtin.systemd_service:
         daemon_reload: true
         enabled: true
-        name: nats
+        name: nats_pub
+        scope: user
+        state: restarted
+
+    - name: Start & Enable the NATS PRI service
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+        enabled: true
+        name: nats_pri
         scope: user
         state: restarted

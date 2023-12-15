@@ -13,18 +13,17 @@ ExecStart=/usr/bin/podman run \
 	--cidfile=%t/%n.ctr-id \
 	--cgroups=no-conmon \
 	--sdnotify=conmon \
-	--name=nats \
+	--name=nats_pub \
 	--network=nats \
 	--replace \
 	-d \
-	-v /home/agent/nats/nats.config:/nats.config:ro \
-	-v /home/agent/certs/fullchain.pem:/fullchain.pem:ro \
-	-v /home/agent/certs/privkey.pem:/privkey.pem:ro \
+	-v /home/agent/nats/nats_pub.conf:/etc/nats_pub.conf:ro \
+	-v /home/agent/certs/fullchain.pem:/etc/certs/fullchain.pem:ro \
+	-v /home/agent/certs/privkey.pem:/etc/certs/privkey.pem:ro \
 	--secret nats_token,type=env,target=NATS_TOKEN \
 	-p 4222:4222 \
-	-p 6222:6222 \
 	-p 8222:8222 \
-	docker.io/nats:latest -c /nats.config
+	docker.io/nats:latest -c /etc/nats_pub.conf
 ExecStop=/usr/bin/podman stop \
 	--ignore -t 10 \
 	--cidfile=%t/%n.ctr-id

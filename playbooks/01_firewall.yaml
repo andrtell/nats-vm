@@ -10,11 +10,6 @@
         rule: allow 
         port: 4222
 
-    - name: Allow access to port 6222
-      community.general.ufw: 
-        rule: allow 
-        port: 6222
-
     - name: Allow access to port 8222
       community.general.ufw: 
         rule: allow 

@@ -1,0 +1,15 @@
+https_port: 8222
+
+authorization: {
+	token: $NATS_TOKEN
+}
+
+cluster: {
+	name: "NATS",
+	listen: 0.0.0.0:6222
+}
+
+tls: {
+	cert_file: "/etc/certs/fullchain.pem"
+	key_file: "/etc/certs/privkey.pem"
+}

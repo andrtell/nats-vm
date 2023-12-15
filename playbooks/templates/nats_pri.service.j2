@@ -1,0 +1,36 @@
+[Unit]
+Description=Nats
+Documentation=man:podman-generate-systemd(1)
+Wants=network-online.target
+After=network-online.target podman.socket nats_pub.service
+RequiresMountsFor=%t/containers
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=on-failure
+TimeoutStopSec=70
+ExecStart=/usr/bin/podman run \
+	--cidfile=%t/%n.ctr-id \
+	--cgroups=no-conmon \
+	--sdnotify=conmon \
+	--name=nats \
+	--network=nats \
+	--replace \
+	-d \
+	-v /home/agent/nats/nats_pri.conf:/etc/nats_pri.conf:ro \
+	--secret nats_token,type=env,target=NATS_TOKEN \
+	docker.io/nats:latest \
+		-c /etc/nats_pri.conf \
+		--routes="nats://ruser:$NATS_TOKEN@nats_pub:6222"
+ExecStop=/usr/bin/podman stop \
+	--ignore -t 10 \
+	--cidfile=%t/%n.ctr-id
+ExecStopPost=/usr/bin/podman rm \
+	-f \
+	--ignore -t 10 \
+	--cidfile=%t/%n.ctr-id
+Type=notify
+NotifyAccess=all
+
+[Install]
+WantedBy=default.target
